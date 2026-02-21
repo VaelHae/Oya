@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>oya 🌿</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void:    #05060a;
+    --deep:    #090d14;
+    --panel:   #0d1220;
+    --border:  #1a2535;
+    --neon:    #7fff9e;
+    --neon2:   #39d660;
+    --violet:  #a855f7;
+    --violet2: #c084fc;
+    --blue:    #3b82f6;
+    --forest:  #0f2318;
+    --white:   #e8f4ee;
+    --muted:   #3d5a47;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    min-height:100vh;
+    background:var(--void);
+    font-family:'Space Mono', monospace;
+    overflow-x:hidden;
+    overflow-y:auto;
+    padding:40px 16px;
+    position:relative;
+  }
+
+  #bgCanvas  { position:fixed; inset:0; z-index:0; pointer-events:none; }
+  #fogCanvas { position:fixed; inset:0; z-index:1; pointer-events:none; }
+
+  body::before {
+    content:'';
+    position:fixed; inset:0; z-index:0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(127,255,158,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(168,85,247,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 80%, rgba(15,35,24,0.8) 0%, transparent 60%);
+    pointer-events:none;
+    animation:auroraShift 12s ease-in-out infinite;
+  }
+  @keyframes auroraShift{0%,100%{opacity:0.8}50%{opacity:1}}
+
+  .firefly {
+    position:fixed; border-radius:50%;
+    pointer-events:none; z-index:2;
+    animation:fireflyMove ease-in-out infinite;
+  }
+  @keyframes fireflyMove {
+    0%  {transform:translate(0,0) scale(1);opacity:0}
+    15% {opacity:1}
+    50% {transform:translate(var(--tx),var(--ty)) scale(1.4)}
+    85% {opacity:0.6}
+    100%{transform:translate(0,0) scale(1);opacity:0}
+  }
+
+  .page-wrapper {
+    display:flex; justify-content:center; align-items:flex-start;
+    min-height:calc(100vh - 80px);
+    position:relative; z-index:3;
+  }
+
+  /* SPLASH */
+  .splash {
+    position:fixed; inset:0; z-index:999;
+    background:var(--void);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    cursor:pointer;
+    transition:opacity 1.4s cubic-bezier(0.4,0,0.2,1), visibility 1.4s;
+    overflow:hidden;
+  }
+  .splash.hide{opacity:0;visibility:hidden;pointer-events:none;}
+
+  #splashCanvas{position:absolute;inset:0;z-index:0;pointer-events:none;}
+
+  .splash-aurora {
+    position:absolute; inset:0; z-index:1; pointer-events:none;
+    background:
+      radial-gradient(ellipse at 30% 60%, rgba(127,255,158,0.06) 0%, transparent 55%),
+      radial-gradient(ellipse at 75% 30%, rgba(168,85,247,0.07) 0%, transparent 55%);
+    animation:splashAurora 6s ease-in-out infinite;
+  }
+  @keyframes splashAurora{0%,100%{opacity:0.6}50%{opacity:1}}
+
+  .splash-forest {
+    position:absolute; bottom:0; left:0; right:0; z-index:2;
+    height:180px;
+    background:linear-gradient(180deg, transparent 0%, var(--forest) 60%, #070f0a 100%);
+    pointer-events:none;
+  }
+  .splash-forest::before {
+    content:'';
+    position:absolute; bottom:0; left:0; right:0; height:140px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 140'%3E%3Cpath d='M0,140 L60,40 L120,140 M80,140 L150,20 L220,140 M180,140 L260,50 L340,140 M300,140 L370,10 L440,140 M400,140 L470,35 L540,140 M500,140 L580,5 L660,140 M610,140 L690,25 L770,140 M720,140 L800,15 L880,140 M830,140 L910,40 L990,140 M940,140 L1020,20 L1100,140 M1050,140 L1130,45 L1200,140 L1200,140 L0,140Z' fill='%230a1a10' opacity='0.95'/%3E%3C/svg%3E");
+    background-size:cover; background-position:bottom;
+  }
+
+  .splash-orb {
+    position:relative; z-index:3;
+    font-size:4rem; margin-bottom:20px;
+    animation:orbFloat 3s ease-in-out infinite;
+    filter:drop-shadow(0 0 30px rgba(127,255,158,0.5)) drop-shadow(0 0 60px rgba(168,85,247,0.3));
+  }
+  @keyframes orbFloat{
+    0%,100%{transform:translateY(0) scale(1) rotate(-3deg)}
+    50%{transform:translateY(-22px) scale(1.07) rotate(3deg)}
+  }
+
+  .splash-name {
+    font-family:'Rajdhani', sans-serif;
+    font-size:5.5rem; font-weight:700;
+    position:relative; z-index:3;
+    letter-spacing:14px; margin-bottom:8px;
+    background:linear-gradient(135deg, var(--neon) 0%, var(--violet2) 50%, var(--neon2) 100%);
+    background-size:200% 200%;
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text;
+    animation:nameGlow 4s ease infinite;
+    text-transform:lowercase;
+  }
+  @keyframes nameGlow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+
+  .splash-sub {
+    font-size:0.55rem; color:var(--muted);
+    letter-spacing:5px; text-transform:uppercase;
+    margin-bottom:52px; position:relative; z-index:3;
+    animation:subBlink 3s ease-in-out infinite;
+  }
+  @keyframes subBlink{0%,100%{opacity:0.3}50%{opacity:0.8}}
+
+  .splash-btn {
+    position:relative; z-index:3;
+    padding:14px 52px; background:transparent;
+    border:1px solid rgba(127,255,158,0.4); color:var(--neon);
+    font-family:'Space Mono', monospace; font-size:0.68rem;
+    letter-spacing:4px; text-transform:uppercase;
+    cursor:pointer; border-radius:3px;
+    transition:all 0.4s;
+    box-shadow:0 0 20px rgba(127,255,158,0.08);
+    overflow:hidden;
+  }
+  .splash-btn::before{
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(135deg,rgba(127,255,158,0.1),rgba(168,85,247,0.07));
+    opacity:0; transition:opacity 0.4s;
+  }
+  .splash-btn:hover{border-color:rgba(127,255,158,0.9);box-shadow:0 0 40px rgba(127,255,158,0.25);letter-spacing:6px;}
+  .splash-btn:hover::before{opacity:1;}
+
+  .splash-hint {
+    margin-top:16px; font-size:0.5rem; color:#1a2e20;
+    letter-spacing:3px; position:relative; z-index:3;
+    animation:blink 2.5s ease-in-out infinite;
+  }
+  @keyframes blink{0%,100%{opacity:0.2}50%{opacity:0.7}}
+
+  /* CARD */
+  .card {
+    position:relative; z-index:1;
+    width:390px; max-width:95vw;
+    background:linear-gradient(160deg, rgba(13,18,32,0.97) 0%, rgba(9,14,22,0.98) 100%);
+    border:1px solid var(--border);
+    border-radius:4px;
+    animation:cardIn 1.2s cubic-bezier(0.16,1,0.3,1) forwards;
+    opacity:0; transform:translateY(36px) scale(0.97);
+    box-shadow:
+      0 0 0 1px rgba(127,255,158,0.04),
+      0 40px 100px rgba(0,0,0,0.9),
+      inset 0 1px 0 rgba(127,255,158,0.06);
+    overflow:hidden;
+  }
+  @keyframes cardIn{to{opacity:1;transform:translateY(0) scale(1)}}
+
+  .card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:1px;
+    background:linear-gradient(90deg,transparent,var(--neon),var(--violet2),var(--neon),transparent);
+    background-size:200% 100%; opacity:0.5;
+    animation:topLine 6s linear infinite;
+  }
+  @keyframes topLine{0%{background-position:0%}100%{background-position:200%}}
+
+  .corner{position:absolute;width:12px;height:12px;border-color:rgba(127,255,158,0.18);border-style:solid;}
+  .corner-tl{top:8px;left:8px;border-width:1px 0 0 1px}
+  .corner-tr{top:8px;right:8px;border-width:1px 1px 0 0}
+  .corner-bl{bottom:8px;left:8px;border-width:0 0 1px 1px}
+  .corner-br{bottom:8px;right:8px;border-width:0 1px 1px 0}
+
+  /* BANNER */
+  .banner {
+    width:100%; height:120px;
+    position:relative; overflow:hidden;
+    background:linear-gradient(135deg, #050d1a 0%, #0a1220 40%, #060e0a 100%);
+  }
+  #bannerCanvas{position:absolute;inset:0;width:100%;height:100%;}
+
+  .banner-glow {
+    position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse at 25% 60%, rgba(127,255,158,0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(168,85,247,0.12) 0%, transparent 50%);
+    animation:bannerGlow 7s ease-in-out infinite;
+  }
+  @keyframes bannerGlow{0%,100%{opacity:0.7}50%{opacity:1}}
+
+  .banner-trees {
+    position:absolute; bottom:0; left:0; right:0; height:50px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 50'%3E%3Cpath d='M0,50 L20,15 L40,50 M30,50 L55,5 L80,50 M70,50 L95,20 L120,50 M110,50 L135,8 L160,50 M150,50 L175,18 L200,50 M190,50 L220,3 L250,50 M240,50 L265,14 L290,50 M280,50 L310,10 L340,50 M325,50 L350,20 L375,50 M360,50 L380,12 L400,50 L400,50 L0,50Z' fill='%23071209'/%3E%3C/svg%3E");
+    background-size:cover; background-position:bottom;
+  }
+
+  .banner-text {
+    position:absolute; bottom:12px; left:18px;
+    font-size:0.52rem; letter-spacing:5px;
+    color:rgba(127,255,158,0.3);
+    font-family:'Rajdhani',sans-serif; text-transform:uppercase;
+    animation:textPulse 5s ease-in-out infinite;
+  }
+  @keyframes textPulse{0%,100%{opacity:0.3}50%{opacity:0.8}}
+
+  /* AVATAR */
+  .avatar-wrapper {
+    display:flex; justify-content:center;
+    margin-top:-48px; margin-bottom:18px;
+    position:relative; z-index:2;
+  }
+  .avatar-outer{position:relative;width:96px;height:96px;}
+
+  .avatar-ring {
+    position:absolute; inset:-3px; border-radius:50%;
+    background:conic-gradient(
+      var(--neon) 0deg, rgba(0,0,0,0) 45deg, rgba(0,0,0,0) 55deg,
+      var(--violet) 120deg, var(--neon2) 200deg,
+      rgba(0,0,0,0) 235deg, rgba(0,0,0,0) 245deg,
+      var(--violet2) 310deg, var(--neon) 360deg
+    );
+    animation:ringRotate 5s linear infinite;
+  }
+  @keyframes ringRotate{to{transform:rotate(360deg)}}
+
+  .avatar-ring-inner{position:absolute;inset:1px;border-radius:50%;background:var(--panel);z-index:1;}
+
+  .avatar-img {
+    position:absolute; inset:5px; border-radius:50%;
+    overflow:hidden; z-index:2;
+    background:linear-gradient(135deg, #0d1a12, #12203a);
+    display:flex; align-items:center; justify-content:center;
+    font-size:2.2rem;
+  }
+  .avatar-img img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+
+  .forest-orb {
+    position:absolute; top:50%; left:50%;
+    border-radius:50%;
+    animation:forestOrbit linear infinite;
+    z-index:3;
+  }
+  @keyframes forestOrbit{
+    0%  {transform:rotate(0deg)   translateX(54px) scale(1);   opacity:0.9}
+    50% {transform:rotate(180deg) translateX(54px) scale(0.5); opacity:0.3}
+    100%{transform:rotate(360deg) translateX(54px) scale(1);   opacity:0.9}
+  }
+
+  .avatar-glow {
+    position:absolute; bottom:-10px; left:50%; transform:translateX(-50%);
+    width:72px; height:20px;
+    background:radial-gradient(ellipse,rgba(127,255,158,0.35),transparent 70%);
+    border-radius:50%; animation:glowPulse 3s ease-in-out infinite; z-index:0;
+  }
+  @keyframes glowPulse{0%,100%{opacity:0.4;transform:translateX(-50%) scaleX(1)}50%{opacity:1;transform:translateX(-50%) scaleX(1.4)}}
+
+  /* INFO */
+  .info{padding:0 26px;text-align:center;}
+
+  .username {
+    font-family:'Rajdhani', sans-serif;
+    font-size:2.4rem; font-weight:700;
+    letter-spacing:4px; margin-bottom:3px;
+    background:linear-gradient(135deg,var(--neon),var(--white),var(--violet2));
+    background-size:200% 200%;
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text;
+    animation:nameGlow 6s ease infinite;
+    text-transform:lowercase;
+  }
+
+  .tag{font-size:0.58rem;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;}
+
+  .divider{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .divider::before{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--border));}
+  .divider::after {content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);}
+  .divider-icon{font-size:0.7rem;color:var(--neon);animation:iconPulse 4s ease-in-out infinite;}
+  @keyframes iconPulse{0%,100%{opacity:0.4}50%{opacity:1;text-shadow:0 0 8px var(--neon)}}
+
+  .desc {
+    font-size:0.72rem; color:#3d5a47; line-height:1.9;
+    margin-bottom:22px; padding:14px;
+    background:rgba(127,255,158,0.025);
+    border:1px solid rgba(127,255,158,0.06);
+    border-radius:4px; font-style:italic;
+  }
+  .desc em{color:var(--neon2);font-style:normal;}
+
+  /* BUTTONS */
+  .links{display:flex;flex-direction:column;gap:8px;}
+
+  .btn {
+    display:flex; align-items:center; gap:14px;
+    padding:11px 16px;
+    background:rgba(255,255,255,0.012);
+    border:1px solid var(--border);
+    border-radius:3px;
+    color:#5a8a6a; text-decoration:none;
+    font-family:'Space Mono', monospace; font-size:0.72rem;
+    transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+    position:relative; overflow:hidden; cursor:pointer;
+  }
+  .btn::before {
+    content:''; position:absolute; left:0; top:0; bottom:0;
+    width:2px; background:linear-gradient(180deg,var(--neon),var(--violet));
+    transform:scaleY(0); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  .btn::after {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(90deg,rgba(127,255,158,0.04),transparent);
+    opacity:0; transition:opacity 0.3s;
+  }
+  .btn:hover{border-color:rgba(127,255,158,0.25);color:var(--neon);transform:translateX(5px);}
+  .btn:hover::before{transform:scaleY(1);}
+  .btn:hover::after{opacity:1;}
+
+  .btn-yt:hover{border-color:rgba(255,80,80,0.3);color:#ff6b6b;}
+  .btn-yt::before{background:linear-gradient(180deg,#ff4444,#ff8888);}
+  .btn-yt::after{background:linear-gradient(90deg,rgba(255,80,80,0.04),transparent);}
+
+  .btn-ig:hover{border-color:rgba(196,100,255,0.3);color:#c464ff;}
+  .btn-ig::before{background:linear-gradient(180deg,#a855f7,#c084fc);}
+  .btn-ig::after{background:linear-gradient(90deg,rgba(168,85,247,0.04),transparent);}
+
+  .btn-dc:hover{border-color:rgba(88,101,242,0.3);color:#8b9fff;}
+  .btn-dc::before{background:linear-gradient(180deg,#5865F2,#8b9fff);}
+  .btn-dc::after{background:linear-gradient(90deg,rgba(88,101,242,0.04),transparent);}
+
+  .btn-bb:hover{border-color:rgba(127,255,158,0.35);color:var(--neon);}
+  .btn-bb::before{background:linear-gradient(180deg,var(--neon2),var(--neon));}
+  .btn-bb::after{background:linear-gradient(90deg,rgba(127,255,158,0.04),transparent);}
+
+  .btn-icon{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .icon-tt{background:rgba(255,255,255,0.04);}
+  .icon-yt{background:rgba(255,80,80,0.08);}
+  .icon-ig{background:rgba(168,85,247,0.08);}
+  .icon-dc{background:rgba(88,101,242,0.08);}
+  .icon-bb{background:rgba(127,255,158,0.06);font-size:0.8rem;}
+
+  .btn-label{flex:1;}
+  .btn-name{display:block;font-size:0.72rem;font-weight:700;}
+  .btn-sub{display:block;font-size:0.58rem;color:var(--muted);margin-top:1px;letter-spacing:1px;}
+  .btn-arrow{font-size:0.65rem;color:var(--muted);transition:all 0.3s;flex-shrink:0;}
+  .btn:hover .btn-arrow{transform:translateX(5px);color:var(--neon);}
+
+  /* MUSIC PLAYER */
+  .music-player {
+    margin-top:18px;
+    background:rgba(127,255,158,0.02);
+    border:1px solid rgba(127,255,158,0.1);
+    border-radius:4px; padding:12px 14px;
+    display:flex; align-items:center; gap:12px;
+    position:relative; overflow:hidden;
+  }
+  .music-player::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:1px;
+    background:linear-gradient(90deg,transparent,var(--neon),var(--violet2),transparent);
+    opacity:0.3;
+  }
+
+  .music-play-btn {
+    width:34px; height:34px; border-radius:50%;
+    background:linear-gradient(135deg,var(--neon2),var(--violet));
+    border:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; transition:all 0.25s; color:#060a0d; font-size:0.75rem;
+    box-shadow:0 0 14px rgba(127,255,158,0.3);
+  }
+  .music-play-btn:hover{transform:scale(1.1);box-shadow:0 0 28px rgba(127,255,158,0.6);}
+
+  .music-info{flex:1;min-width:0;}
+  .music-title{font-size:0.62rem;color:var(--neon2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px;letter-spacing:1px;}
+  .music-bar{height:3px;background:rgba(127,255,158,0.08);border-radius:2px;overflow:hidden;cursor:pointer;}
+  .music-progress{height:100%;background:linear-gradient(90deg,var(--neon2),var(--violet));border-radius:2px;width:0%;transition:width 0.5s linear;}
+  .music-time{font-size:0.5rem;color:var(--muted);margin-top:3px;letter-spacing:1px;}
+
+  .eq{display:flex;align-items:flex-end;gap:2px;height:14px;flex-shrink:0;}
+  .eq-bar{width:3px;background:linear-gradient(to top,var(--neon2),var(--violet));border-radius:1px;height:3px;opacity:0.2;}
+  .eq-bar.playing{opacity:1;animation:eqGalaxy ease-in-out infinite;}
+  @keyframes eqGalaxy{0%,100%{height:3px}25%{height:10px}50%{height:5px}75%{height:14px}}
+
+  .music-vol{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+  .vol-icon{font-size:0.65rem;color:var(--muted);}
+  .vol-slider{-webkit-appearance:none;width:44px;height:3px;background:rgba(127,255,158,0.1);border-radius:2px;outline:none;}
+  .vol-slider::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;background:var(--neon);cursor:pointer;box-shadow:0 0 6px rgba(127,255,158,0.6);}
+
+  /* FOOTER */
+  .footer{margin-top:24px;text-align:center;font-size:0.5rem;color:#1a2a20;letter-spacing:3px;text-transform:uppercase;}
+  .footer-sym{color:rgba(127,255,158,0.15);font-size:0.6rem;margin-bottom:4px;animation:footerPulse 5s ease-in-out infinite;}
+  @keyframes footerPulse{0%,100%{opacity:0.4}50%{opacity:1}}
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+<canvas id="fogCanvas"></canvas>
+<div id="fireflies"></div>
+
+<!-- SPLASH -->
+<div class="splash" id="splash" onclick="enterSite()">
+  <canvas id="splashCanvas"></canvas>
+  <div class="splash-aurora"></div>
+  <div class="splash-forest"></div>
+  <div class="splash-orb">🌿</div>
+  <div class="splash-name">oya</div>
+  <div class="splash-sub">✦ lost in the galaxy forest ✦</div>
+  <button class="splash-btn" onclick="enterSite()">enter 🌌</button>
+  <div class="splash-hint">tap anywhere to drift in</div>
+</div>
+
+<div class="page-wrapper">
+  <div class="card">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+
+    <div class="banner">
+      <canvas id="bannerCanvas"></canvas>
+      <div class="banner-glow"></div>
+      <div class="banner-trees"></div>
+      <div class="banner-text">✦ oya · galaxy forest ✦</div>
+    </div>
+
+    <div class="avatar-wrapper">
+      <div class="avatar-outer">
+        <div class="avatar-ring"></div>
+        <div class="avatar-ring-inner"></div>
+        <div class="avatar-img">
+            <img src="https://i.ibb.co.com/nq3M24ym/a4b72019ea8ea7be861ebcb5111ef0b2-tplv-tiktokx-cropcenter-1080-1080.jpg" alt="Vaelhae">
+          </div>
+        <div class="avatar-glow"></div>
+        <div class="forest-orb" style="width:5px;height:5px;background:var(--neon);animation-duration:4s;margin:-2.5px 0 0 -2.5px;box-shadow:0 0 8px var(--neon);"></div>
+        <div class="forest-orb" style="width:4px;height:4px;background:var(--violet2);animation-duration:4s;animation-delay:-1.33s;margin:-2px 0 0 -2px;box-shadow:0 0 8px var(--violet2);"></div>
+        <div class="forest-orb" style="width:3px;height:3px;background:var(--neon2);animation-duration:4s;animation-delay:-2.66s;margin:-1.5px 0 0 -1.5px;box-shadow:0 0 6px var(--neon2);"></div>
+      </div>
+    </div>
+
+    <div class="info">
+      <div class="username">oya</div>
+      <div class="tag">✦ floating · galaxy · forest ✦</div>
+
+      <div class="divider"><span class="divider-icon">◈</span></div>
+
+      <div class="desc">
+        somewhere between the stars and the trees —<br>
+        <em>just vibing, ngefly, lost in space 🌌🌿</em>
+      </div>
+
+      <div class="links">
+        <div class="btn btn-bb" style="opacity:0.35;pointer-events:none;">
+            <span class="btn-icon icon-bb">🌿</span>
+            <span class="btn-label"><span class="btn-name">BagiBagi</span><span class="btn-sub">coming soon... ✦</span></span>
+            <span class="btn-arrow">→</span>
+          </div>
+          <a href="https://discord.com/invite/E3eUvkqCPB" class="btn btn-dc">
+            <span class="btn-icon icon-dc"><img src="https://cdn.simpleicons.org/discord/a855f7" alt="Discord" style="width:14px;height:14px;object-fit:contain;"></span>
+            <span class="btn-label"><span class="btn-name">Discord</span><span class="btn-sub">Join Server 🌌</span></span>
+            <span class="btn-arrow">→</span>
+          </a>
+        <a href="https://www.tiktok.com/@stupiderii?_r=1&_t=ZS-945EIuPoomg" class="btn">
+          <span class="btn-icon icon-tt"><img src="https://cdn.simpleicons.org/tiktok/7fff9e" alt="TikTok" style="width:14px;height:14px;object-fit:contain;"></span>
+          <span class="btn-label"><span class="btn-name">TikTok</span><span class="btn-sub">@stupiderii</span></span>
+          <span class="btn-arrow">→</span>
+        </a>
+        <a href="https://www.instagram.com/oyoyoya_?igsh=Yjk0bGZzM2xieWtz&utm_source=qr" class="btn btn-ig">
+          <span class="btn-icon icon-ig"><img src="https://cdn.simpleicons.org/instagram/a855f7" alt="Instagram" style="width:14px;height:14px;object-fit:contain;"></span>
+          <span class="btn-label"><span class="btn-name">Instagram</span><span class="btn-sub">@oyoyoya_</span></span>
+          <span class="btn-arrow">→</span>
+        </a>
+        <div class="btn btn-yt" style="opacity:0.35;pointer-events:none;">
+          <span class="btn-icon icon-yt"><img src="https://cdn.simpleicons.org/youtube/ff4444" alt="YouTube" style="width:14px;height:14px;object-fit:contain;"></span>
+          <span class="btn-label"><span class="btn-name">YouTube</span><span class="btn-sub">coming soon... 🌙</span></span>
+          <span class="btn-arrow">→</span>
+        </div>
+      </div>
+
+      <div class="music-player">
+        <button class="music-play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+        <div class="music-info">
+          <div class="music-title">✦ galaxy forest — ambient</div>
+          <div class="music-bar" id="musicBar" onclick="seekTo(event,this)">
+            <div class="music-progress" id="progress"></div>
+          </div>
+          <div class="music-time" id="timeDisplay">0:00 / 0:00</div>
+        </div>
+        <div class="eq">
+          <div class="eq-bar" style="animation-duration:0.8s;"></div>
+          <div class="eq-bar" style="animation-duration:0.6s;animation-delay:0.15s;"></div>
+          <div class="eq-bar" style="animation-duration:0.7s;animation-delay:0.08s;"></div>
+          <div class="eq-bar" style="animation-duration:0.9s;animation-delay:0.2s;"></div>
+        </div>
+        <div class="music-vol">
+          <span class="vol-icon">🔊</span>
+          <input class="vol-slider" type="range" min="0" max="1" step="0.05" value="0.5" oninput="setVolume(this.value)">
+        </div>
+      </div>
+
+      <audio id="bgAudio" loop>
+        <source src="https://raw.githubusercontent.com/VaelHae/Backsound/main/Comptine%20d'un%20autre%20%C3%A9t%C3%A9%2C%20l'apr%C3%A8s-midi.mp3" type="audio/mpeg">
+      </audio>
+
+      <div class="footer">
+        <div class="footer-sym">· · · ◈ · · ·</div>
+        oya © 2026
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// SPLASH CANVAS
+const splashCanvas=document.getElementById('splashCanvas');
+splashCanvas.style.cssText='position:absolute;inset:0;z-index:0;pointer-events:none;';
+const sCtx=splashCanvas.getContext('2d');
+function resizeSplash(){splashCanvas.width=window.innerWidth;splashCanvas.height=window.innerHeight;}
+resizeSplash();
+
+const stars=Array.from({length:260},()=>({
+  x:Math.random()*window.innerWidth,
+  y:Math.random()*window.innerHeight,
+  r:Math.random()*1.7,
+  alpha:Math.random(),
+  dir:Math.random()>0.5?1:-1,
+  speed:0.003+Math.random()*0.008,
+  tint:Math.random()<0.3?(Math.random()<0.5?1:2):0
+}));
+
+const shoots=[];
+function spawnShoot(){
+  shoots.push({
+    x:Math.random()*window.innerWidth*0.8,
+    y:Math.random()*window.innerHeight*0.4,
+    len:80+Math.random()*140,
+    speed:8+Math.random()*8,
+    progress:0,
+    angle:Math.PI/6+(Math.random()-0.5)*0.4
+  });
+}
+setInterval(spawnShoot,2500);spawnShoot();
+
+function drawSplash(){
+  sCtx.clearRect(0,0,splashCanvas.width,splashCanvas.height);
+  // Nebula glow
+  [{x:0.3,y:0.4,r:220,c:[127,255,158,0.035]},{x:0.72,y:0.28,r:190,c:[168,85,247,0.04]},{x:0.55,y:0.7,r:160,c:[59,130,246,0.025]}].forEach(n=>{
+    const grd=sCtx.createRadialGradient(n.x*splashCanvas.width,n.y*splashCanvas.height,0,n.x*splashCanvas.width,n.y*splashCanvas.height,n.r);
+    grd.addColorStop(0,`rgba(${n.c.join(',')})`);grd.addColorStop(1,'transparent');
+    sCtx.fillStyle=grd;sCtx.fillRect(0,0,splashCanvas.width,splashCanvas.height);
+  });
+  stars.forEach(s=>{
+    s.alpha+=s.dir*s.speed;
+    if(s.alpha>1||s.alpha<0.04)s.dir*=-1;
+    sCtx.beginPath();sCtx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    sCtx.fillStyle=s.tint===1?`rgba(127,255,158,${s.alpha*0.85})`:s.tint===2?`rgba(192,132,252,${s.alpha*0.85})`:`rgba(210,230,255,${s.alpha*0.65})`;
+    sCtx.fill();
+  });
+  for(let i=shoots.length-1;i>=0;i--){
+    const ss=shoots[i];ss.progress+=ss.speed;
+    const fade=Math.max(0,1-ss.progress/ss.len);
+    const x2=ss.x+ss.progress*Math.cos(ss.angle),y2=ss.y+ss.progress*Math.sin(ss.angle);
+    const x1=ss.x+Math.max(0,ss.progress-100)*Math.cos(ss.angle),y1=ss.y+Math.max(0,ss.progress-100)*Math.sin(ss.angle);
+    const g=sCtx.createLinearGradient(x1,y1,x2,y2);
+    g.addColorStop(0,'rgba(127,255,158,0)');g.addColorStop(1,`rgba(200,230,255,${fade*0.9})`);
+    sCtx.beginPath();sCtx.strokeStyle=g;sCtx.lineWidth=1.5;sCtx.moveTo(x1,y1);sCtx.lineTo(x2,y2);sCtx.stroke();
+    if(ss.progress>ss.len+100)shoots.splice(i,1);
+  }
+  requestAnimationFrame(drawSplash);
+}
+drawSplash();
+
+// BG CANVAS
+const bgCanvas=document.getElementById('bgCanvas');
+const bgCtx=bgCanvas.getContext('2d');
+function resizeBg(){bgCanvas.width=window.innerWidth;bgCanvas.height=window.innerHeight;}
+resizeBg();
+window.addEventListener('resize',()=>{resizeSplash();resizeBg();});
+
+const bgStars=Array.from({length:160},()=>({
+  x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,
+  r:Math.random()*1.2,alpha:Math.random()*0.45,
+  dir:Math.random()>0.5?1:-1,speed:0.002+Math.random()*0.005
+}));
+function drawBg(){
+  bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
+  bgStars.forEach(s=>{
+    s.alpha+=s.dir*s.speed;if(s.alpha>0.45||s.alpha<0.02)s.dir*=-1;
+    bgCtx.beginPath();bgCtx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    bgCtx.fillStyle=`rgba(180,220,200,${s.alpha})`;bgCtx.fill();
+  });
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+
+// FOG CANVAS
+const fogCanvas=document.getElementById('fogCanvas');
+const fogCtx=fogCanvas.getContext('2d');
+function resizeFog(){fogCanvas.width=window.innerWidth;fogCanvas.height=window.innerHeight;}
+resizeFog();
+const fogLayers=[
+  {x:0,y:0.75,speed:0.3,h:80,alpha:0.06},
+  {x:1,y:0.82,speed:-0.18,h:55,alpha:0.04},
+  {x:0,y:0.91,speed:0.13,h:45,alpha:0.05},
+];
+function drawFog(){
+  fogCtx.clearRect(0,0,fogCanvas.width,fogCanvas.height);
+  fogLayers.forEach(l=>{
+    l.x+=l.speed/fogCanvas.width;
+    const px=((l.x%2)+2)%2;
+    const drawX=(px-1)*fogCanvas.width;
+    const y=l.y*fogCanvas.height;
+    const grd=fogCtx.createLinearGradient(0,y,0,y+l.h);
+    grd.addColorStop(0,'transparent');
+    grd.addColorStop(0.4,`rgba(127,255,158,${l.alpha})`);
+    grd.addColorStop(1,'transparent');
+    fogCtx.fillStyle=grd;
+    fogCtx.fillRect(drawX,y,fogCanvas.width,l.h);
+    fogCtx.fillRect(drawX+fogCanvas.width,y,fogCanvas.width,l.h);
+  });
+  requestAnimationFrame(drawFog);
+}
+drawFog();
+
+// BANNER CANVAS
+const bannerCanvas=document.getElementById('bannerCanvas');
+const bCtx=bannerCanvas.getContext('2d');
+function resizeBanner(){bannerCanvas.width=bannerCanvas.offsetWidth||390;bannerCanvas.height=120;}
+resizeBanner();
+const bStars=Array.from({length:60},()=>({
+  x:Math.random()*400,y:Math.random()*120,
+  r:0.5+Math.random()*1.2,alpha:Math.random()*0.7,
+  dir:Math.random()>0.5?1:-1,speed:0.005+Math.random()*0.012
+}));
+function drawBanner(){
+  bCtx.clearRect(0,0,bannerCanvas.width,120);
+  bStars.forEach(s=>{
+    s.alpha+=s.dir*s.speed;if(s.alpha>0.7||s.alpha<0.05)s.dir*=-1;
+    bCtx.beginPath();bCtx.arc(s.x%bannerCanvas.width,s.y,s.r,0,Math.PI*2);
+    bCtx.fillStyle=Math.random()<0.002?`rgba(192,132,252,${s.alpha})`:`rgba(127,255,158,${s.alpha*0.65})`;
+    bCtx.fill();
+  });
+  requestAnimationFrame(drawBanner);
+}
+drawBanner();
+
+// FIREFLIES
+const fireflyEl=document.getElementById('fireflies');
+for(let i=0;i<20;i++){
+  const f=document.createElement('div');f.className='firefly';
+  const sz=2+Math.random()*3;
+  const isViolet=Math.random()>0.5;
+  const col=isViolet?'rgba(192,132,252,0.85)':'rgba(127,255,158,0.85)';
+  const glow=isViolet?'rgba(192,132,252,0.9)':'rgba(127,255,158,0.9)';
+  f.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*80}%;background:${col};box-shadow:0 0 ${sz*3}px ${glow};animation-duration:${5+Math.random()*8}s;animation-delay:${Math.random()*8}s;--tx:${(Math.random()-0.5)*130}px;--ty:${(Math.random()-0.5)*80}px;`;
+  fireflyEl.appendChild(f);
+}
+
+// MUSIC
+const audio=document.getElementById('bgAudio');
+audio.volume=0.5;let playing=false;
+function togglePlay(){
+  if(playing){audio.pause();document.getElementById('playBtn').textContent='▶';document.querySelectorAll('.eq-bar').forEach(b=>b.classList.remove('playing'));}
+  else{audio.play();document.getElementById('playBtn').textContent='⏸';document.querySelectorAll('.eq-bar').forEach(b=>b.classList.add('playing'));}
+  playing=!playing;
+}
+function setVolume(v){audio.volume=parseFloat(v);}
+function formatTime(s){if(isNaN(s))return'0:00';const m=Math.floor(s/60),sec=Math.floor(s%60);return m+':'+(sec<10?'0':'')+sec;}
+audio.addEventListener('timeupdate',()=>{
+  if(!audio.duration)return;
+  const p=document.getElementById('progress');if(p)p.style.width=(audio.currentTime/audio.duration*100)+'%';
+  const d=document.getElementById('timeDisplay');if(d)d.textContent=formatTime(audio.currentTime)+' / '+formatTime(audio.duration);
+});
+function seekTo(e,el){const r=el.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;}
+
+// SPLASH ENTER
+function enterSite(){
+  document.getElementById('splash').classList.add('hide');
+  audio.play().then(()=>{
+    playing=true;
+    document.getElementById('playBtn').textContent='⏸';
+    document.querySelectorAll('.eq-bar').forEach(b=>b.classList.add('playing'));
+  }).catch(e=>console.log(e));
+}
+</script>
+</body>
+</html>
